@@ -1,6 +1,233 @@
-<!DOCTYPE html><html lang="zh"><head><meta charset="UTF-8"><title>Java面试工具</title>
-<style>body{font-family:Arial;max-width:600px;margin:20px auto;padding:20px;background:#0f172a;color:#e2e8f0}
-h1{color:#38bdf8}a{color:#38bdf8}</style></head><body>
-<h1>🎯 Java面试免费工具</h1><p>工具页面加载中...</p>
-<p>📚 全部工具入口：<a href="https://Abyte-zym.github.io/interview-simulator/">面试模拟器</a></p>
-</body></html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Java技能雷达图自测——20题快速评估7维能力，生成雷达图+个性化学习建议。2026 Java实习求职必备，免费开源工具。">
+<title>Java技能雷达自测 · 2026 免费工具</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:linear-gradient(135deg,#0f3460,#16213e);color:#fff;min-height:100vh}
+.container{max-width:750px;margin:0 auto;padding:25px}
+h1{text-align:center;font-size:1.8em;margin:20px 0 5px}
+.sub{text-align:center;color:#a0b4d0;margin-bottom:25px;font-size:.9em}
+.quiz-card{background:rgba(255,255,255,.08);border-radius:16px;padding:25px;margin:15px 0;backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12)}
+.quiz-card h3{color:#64ffda;margin-bottom:15px;font-size:1.05em}
+.dimension{font-size:.78em;color:#8892b0;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px}
+.options{display:flex;flex-wrap:wrap;gap:8px}
+.opt{flex:1;min-width:120px;padding:12px 8px;border:2px solid rgba(255,255,255,.15);border-radius:10px;text-align:center;cursor:pointer;transition:all .2s;font-size:.9em;background:rgba(255,255,255,.03)}
+.opt:hover{border-color:#64ffda;background:rgba(100,255,218,.08)}
+.opt.selected{border-color:#64ffda;background:rgba(100,255,218,.15);color:#64ffda}
+.result-section{display:none}
+.result-section.show{display:block}
+.radar-box{max-width:450px;margin:30px auto;background:rgba(255,255,255,.06);border-radius:16px;padding:25px}
+.score-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:25px 0}
+.score-item{background:rgba(255,255,255,.06);border-radius:12px;padding:15px;text-align:center}
+.score-item .label{font-size:.78em;color:#8892b0;margin-bottom:5px}
+.score-item .val{font-size:2em;font-weight:700;color:#64ffda}
+.score-item .bar{height:5px;background:rgba(255,255,255,.1);border-radius:3px;margin-top:8px;overflow:hidden}
+.score-item .fill{height:100%;border-radius:3px;transition:width .6s}
+.recommend{background:rgba(255,255,255,.08);border-radius:16px;padding:25px;margin:15px 0;border:1px solid rgba(100,255,218,.2)}
+.recommend h3{color:#64ffda;margin-bottom:12px}
+.recommend li{margin:6px 0;padding:5px 0;color:#ccd6f6;font-size:.9em}
+.donate-section{text-align:center;margin:30px 0;padding:25px;background:rgba(255,255,255,.06);border-radius:16px}
+.donate-section img{width:170px;border-radius:12px;margin:12px 0;border:2px solid rgba(255,255,255,.15)}
+.donate-section p{color:#8892b0;font-size:.82em}
+.nav-links{text-align:center;margin:20px 0;display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.nav-links a{color:#64ffda;text-decoration:none;font-size:.82em;padding:8px 15px;border:1px solid rgba(100,255,218,.3);border-radius:20px;transition:all .2s}
+.nav-links a:hover{background:rgba(100,255,218,.12)}
+.btn-primary{display:block;width:100%;padding:15px;background:linear-gradient(135deg,#64ffda,#0ae6b7);color:#0f3460;border:none;border-radius:12px;font-size:1.1em;font-weight:700;cursor:pointer;margin:20px 0;transition:transform .2s}
+.btn-primary:hover{transform:scale(1.02)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.retry-btn{display:block;width:200px;margin:15px auto;padding:12px;background:transparent;border:2px solid #64ffda;color:#64ffda;border-radius:12px;font-size:1em;cursor:pointer;transition:all .2s}
+.retry-btn:hover{background:rgba(100,255,218,.1)}
+.progress-text{text-align:center;color:#8892b0;margin:10px 0;font-size:.85em}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>📊 Java技能雷达自测</h1>
+<p class="sub">20道题 · 7维评估 · 秒出雷达图 · 2026版</p>
+
+<div id="quizArea">
+<div class="progress-text" id="progressText">已回答 0 / 20</div>
+<div id="questions"></div>
+<button class="btn-primary" id="submitBtn" disabled>📊 生成雷达图（先回答所有问题）</button>
+</div>
+
+<div class="result-section" id="resultArea">
+<h2 style="text-align:center;margin:10px 0">🎯 你的Java技能雷达</h2>
+<div class="radar-box">
+<canvas id="radarChart" height="350"></canvas>
+</div>
+
+<div class="score-grid" id="scoreGrid"></div>
+
+<div class="recommend" id="recommendArea"></div>
+
+<div class="donate-section">
+<h3>☕ 这个工具有用？</h3>
+<p>扫码请作者喝杯咖啡，支持更多免费工具~</p>
+<img src="mm_facetoface_collect_qrcode_1779427130944.png" alt="赞赏码" loading="lazy">
+</div>
+
+<button class="retry-btn" onclick="location.reload()">🔄 重新测试</button>
+</div>
+
+<div class="nav-links">
+<a href="https://Abyte-zym.github.io/java-career-blog/">📚 面试博客</a>
+<a href="https://Abyte-zym.github.io/java-resume-builder/">📝 简历生成</a>
+<a href="https://Abyte-zym.github.io/java-interview-quiz/">☕ 题库</a>
+<a href="https://Abyte-zym.github.io/java-interview-simulator/">🎯 模拟器</a>
+<a href="https://Abyte-zym.github.io/resume-diagnosis/">🔍 诊断</a>
+<a href="https://Abyte-zym.github.io/tools-navigator/">🔧 工具导航</a>
+</div>
+
+</div>
+
+<script>
+const QUESTIONS = [
+  {dim:'Java核心',q:'Java基础——集合、多线程、JVM',opts:['刚入门','会用常用API','理解HashMap/并发原理','读过源码能调优']},
+  {dim:'Java核心',q:'JVM——内存模型、GC、调优',opts:['不了解','知道堆栈概念','理解GC算法和收集器','能分析dump调优JVM']},
+  {dim:'Java核心',q:'并发编程——线程池、锁、AQS',opts:['没接触','用过synchronized','会用线程池+读写锁','手写过AQS或并发工具']},
+  {dim:'框架',q:'Spring Boot——自动配置、Starter',opts:['没用过','会写Controller','理解IoC/AOP/自动配置','自定义过Starter']},
+  {dim:'框架',q:'Spring Cloud——Nacos、Gateway、Feign',opts:['没用过','了解概念','项目里用过2-3个组件','搭建过完整微服务体系']},
+  {dim:'框架',q:'MyBatis/MyBatis-Plus——SQL映射、插件',opts:['没用过','会写简单CRUD','理解动态SQL+分页','做过SQL优化+自定义插件']},
+  {dim:'数据库',q:'MySQL——索引、事务、锁、MVCC',opts:['只会写SQL','理解索引B+树','懂事务隔离+MVCC','做过慢SQL优化和分库分表']},
+  {dim:'数据库',q:'Redis——五种类型、持久化、集群',opts:['没怎么用','会String/Hash缓存','懂穿透/击穿/雪崩方案','搭建过集群+分布式锁实战']},
+  {dim:'数据库',q:'数据库设计——ER模型、范式、分表',opts:['没学过','理解三范式','会画ER图做表设计','设计过千万级数据方案']},
+  {dim:'中间件',q:'消息队列——RocketMQ/Kafka',opts:['没用过','了解概念','做过削峰解耦','处理过消息可靠性+幂等']},
+  {dim:'中间件',q:'搜索引擎——Elasticsearch',opts:['没用过','了解倒排索引','做过全文检索','搭建过集群+调优']},
+  {dim:'中间件',q:'注册配置中心——Nacos/Apollo',opts:['没用过','了解服务发现','用过Nacos配置管理','搭建过Nacos集群']},
+  {dim:'分布式',q:'分布式理论——CAP、BASE、一致性',opts:['没学过','知道CAP定义','理解Paxos/Raft','做过分布式事务方案']},
+  {dim:'分布式',q:'高并发——限流、熔断、降级',opts:['没接触','了解Sentinel概念','项目中配过限流熔断','设计过完整高可用方案']},
+  {dim:'分布式',q:'分布式锁——Redis、Zookeeper',opts:['没用过','理解概念','Redis setnx实现过','比较过多种方案并落地']},
+  {dim:'DevOps',q:'Docker——镜像、容器、编排',opts:['没用过','会基础命令','能写Dockerfile部署','docker-compose编排生产环境']},
+  {dim:'DevOps',q:'CI/CD——Jenkins、GitHub Actions',opts:['没用过','了解概念','用过GitHub Actions','搭建过完整CI/CD流水线']},
+  {dim:'DevOps',q:'Linux——命令、Shell、排查',opts:['基本不用','会常用命令','能Shell编程','生产环境问题排查经验']},
+  {dim:'AI',q:'AI/LLM——大模型API、Spring AI',opts:['没接触','调过API','项目里集成过Spring AI','做过RAG+Agent方案']},
+  {dim:'AI',q:'算法&数据结构——LeetCode、建模',opts:['基础薄弱','刷过简单题','LeetCode200+或竞赛奖','ACM/数学建模省一+']}
+];
+
+const DIMENSIONS = ['Java核心','框架','数据库','中间件','分布式','DevOps','AI'];
+const DIM_COLORS = ['#ff6b6b','#ffd93d','#6bcb77','#4d96ff','#ff922b','#20c997','#cc5de8'];
+
+let answers = new Array(20).fill(-1);
+let chart = null;
+
+function renderQuestions(){
+  const div = document.getElementById('questions');
+  div.innerHTML = QUESTIONS.map((q,i) => `
+    <div class="quiz-card">
+      <div class="dimension">${q.dim}</div>
+      <h3>${i+1}. ${q.q}</h3>
+      <div class="options" id="opts-${i}">
+        ${q.opts.map((o,j)=>`<div class="opt" data-q="${i}" data-a="${j}" onclick="select(${i},${j})">${o}</div>`).join('')}
+      </div>
+    </div>
+  `).join('');
+}
+
+function select(qIdx, aIdx){
+  answers[qIdx] = aIdx;
+  document.querySelectorAll(`#opts-${qIdx} .opt`).forEach((el,i)=>{
+    el.classList.toggle('selected', i===aIdx);
+  });
+  updateProgress();
+}
+
+function updateProgress(){
+  const done = answers.filter(a=>a>=0).length;
+  document.getElementById('progressText').textContent = `已回答 ${done} / 20`;
+  document.getElementById('submitBtn').disabled = done < 20;
+}
+
+function calcScores(){
+  const scores = {};
+  DIMENSIONS.forEach(d=>{scores[d]={total:0,count:0}});
+  QUESTIONS.forEach((q,i)=>{
+    if(answers[i]>=0){
+      scores[q.dim].total += (answers[i]+1)*25;
+      scores[q.dim].count++;
+    }
+  });
+  return Object.fromEntries(DIMENSIONS.map(d=>[d,Math.round(scores[d].total/scores[d].count)]));
+}
+
+function getWeakest(scores){
+  return Object.entries(scores).sort((a,b)=>a[1]-b[1]).slice(0,2);
+}
+
+function getRecommend(weak){
+  const map = {
+    'Java核心':['<a href="https://Abyte-zym.github.io/java-career-blog/collections-interview-2026.html">集合框架10题</a>','<a href="https://Abyte-zym.github.io/java-career-blog/concurrency-interview-2026.html">并发编程10题</a>','<a href="https://Abyte-zym.github.io/java-career-blog/jvm-gc-interview-2026.html">JVM GC10题</a>'],
+    '框架':['<a href="https://Abyte-zym.github.io/java-career-blog/springboot-interview-2026.html">Spring Boot10题</a>','<a href="https://Abyte-zym.github.io/java-career-blog/springcloud-microservice-interview-2026.html">微服务10题</a>'],
+    '数据库':['<a href="https://Abyte-zym.github.io/java-career-blog/mysql-mybatis-optimization.html">MySQL优化10题</a>','<a href="https://Abyte-zym.github.io/java-career-blog/redis-interview-cheatsheet.html">Redis10题</a>'],
+    '中间件':['<a href="https://Abyte-zym.github.io/java-career-blog/springcloud-microservice-interview-2026.html">RocketMQ相关</a>','<a href="https://Abyte-zym.github.io/java-career-blog/docker-k8s-interview-2026.html">中间件部署</a>'],
+    '分布式':['<a href="https://Abyte-zym.github.io/java-interview-quiz/">面试题库刷题</a>','<a href="https://Abyte-zym.github.io/java-career-blog/design-patterns-interview.html">系统设计方向</a>'],
+    'DevOps':['<a href="https://Abyte-zym.github.io/java-career-blog/docker-k8s-interview-2026.html">Docker+K8s10题</a>','<a href="https://Abyte-zym.github.io/java-career-blog/linux-network-interview-2026.html">Linux命令速查</a>'],
+    'AI':['<a href="https://Abyte-zym.github.io/java-career-blog/">Spring AI实战</a>','<a href="https://Abyte-zym.github.io/java-interview-quiz/">AI方向面试题</a>']
+  };
+  return weak.flatMap(w=>map[w]||[]);
+}
+
+function showResults(){
+  const scores = calcScores();
+  const weak = getWeakest(scores);
+  
+  document.getElementById('quizArea').style.display='none';
+  document.getElementById('resultArea').classList.add('show');
+  
+  // Radar chart
+  const ctx = document.getElementById('radarChart').getContext('2d');
+  if(chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type:'radar',
+    data:{
+      labels:DIMENSIONS,
+      datasets:[{
+        label:'你的Java技能',
+        data:DIMENSIONS.map(d=>scores[d]),
+        backgroundColor:'rgba(100,255,218,.15)',
+        borderColor:'#64ffda',
+        borderWidth:2,
+        pointBackgroundColor:'#64ffda',
+        pointRadius:5
+      }]
+    },
+    options:{
+      responsive:true,
+      scales:{r:{min:0,max:100,ticks:{stepSize:20,color:'#8892b0',backdropColor:'transparent'},grid:{color:'rgba(255,255,255,.1)'},pointLabels:{color:'#ccd6f6',font:{size:11}}}},
+      plugins:{legend:{display:false}}
+    }
+  });
+  
+  // Score grid
+  document.getElementById('scoreGrid').innerHTML = DIMENSIONS.map((d,i)=>`
+    <div class="score-item">
+      <div class="label">${d}</div>
+      <div class="val">${scores[d]}</div>
+      <div class="bar"><div class="fill" style="width:${scores[d]}%;background:${DIM_COLORS[i]}"></div></div>
+    </div>
+  `).join('');
+  
+  // Recommendations
+  const recs = getRecommend(weak);
+  document.getElementById('recommendArea').innerHTML = `
+    <h3>🎯 你的短板：${weak.map(w=>w[0]).join('、')}</h3>
+    <p style="color:#8892b0;margin-bottom:10px;font-size:.85em">以下资源帮你专项突破：</p>
+    <ul>${recs.map(r=>`<li>${r}</li>`).join('')}</ul>
+    <p style="color:#64ffda;margin-top:12px;font-size:.82em">💡 分享你的雷达图给朋友，一起进步！</p>
+  `;
+  
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+renderQuestions();
+updateProgress();
+document.getElementById('submitBtn').addEventListener('click',showResults);
+</script>
+</body>
+</html>
